@@ -4,14 +4,14 @@ Integrantes: Jorge Miño
              Sonia Jaguaco
              
              
-Objetivo proyecto
-El proyecto se basa en la recoleccion tweets para procesamiento y limpieza, posterior a esto clasificarlos segun los sentimientos y obetener datos de interes en funcion de su clasficacion.
+Objetivo del proyecto
+El proyecto se basa en la recolección tweets para procesamiento y limpieza, posterior a esto clasificarlos según los sentimientos y obtener datos de interés en función de su clasificación.
 
 Resumen del proyecto 
-Recolectar tweets para el posterior analisis de sus sentimientos, posterior a la recoleccion filtrar los tweets con expresiones regulares, con los tweets filtrados extraer tweets y ponerles sentimientos a criterio de uno, una vez clasificados crear un train con los tweets y con el script Codigo Phyton clasificador.py y posterior a esto filtrar y obtener resultados.
+Recolectar tweets para el posterior análisis de sus sentimientos, posterior a la recolección filtrar los tweets con expresiones regulares, con los tweets filtrados extraer tweets y ponerles sentimientos a criterio de uno, una vez clasificados crear un train con los tweets y con el script Codigo Phyton clasificador.py y posterior a esto filtrar y obtener resultados.
 
 
-Herramientas utilizadas:Couchdb, Pycharm, elasticsearch
+Herramientas utilizadas: Couchdb, Pycharm, elasticsearch
 
 Para instalar Couchdb ingresar a este link
 https://www.digitalocean.com/community/tutorials/how-to-install-couchdb-and-futon-on-ubuntu-14-04
@@ -26,21 +26,21 @@ https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-el
 Para instalar river en elasticsearch 
 https://github.com/elastic/elasticsearch-river-couchdb
 
-Instalacion pluing head para visualizar elasticsearch
+Instalación plugin head para visualizar elasticsearch
 https://mobz.github.io/elasticsearch-head/
 
-
-Proceso de recoleccion de tweets necesitamos registrarnos como desarrollador en la pagina de twitter y obtener credenciales 
-en el archivo de Script/Cosechador Phyton.txt ponemos nuestrar credenciales.
+Desarrollo del proyecto
+Proceso de recolección de tweets necesitamos registrarnos como desarrollador en la página de twitter y obtener credenciales. 
+En el archivo de Script/Cosechador Phyton.txt ponemos nuestras credenciales.
 Para ejecutar el script utilizamos el siguiente comando este script nos permite recolectar tweets 
 python cosechador_phyton.py localhost tweets 
 
-Creamos una vista en couchdb en el documento Documentacion/Proceso Clasificacion.docx ahi se explica como se crea una vista en couchdb y parte del analisis en elasticsearch y exportacion utilizando curl y river.
+Creamos una vista en couchdb en el documento Documentacion/Proceso Clasificacion.docx ahí se explica cómo se crea una vista en couchdb y parte del análisis en elasticsearch y exportación utilizando curl y river.
 
-Posterior a esto tenemos que clasificar los tweets lo que dentro del script /Script/Codigo Phyton clasificador.py que esta en la 
-carpeta del proyecto ejecutamos en pycharm dentro de este script esta explicado que hace cada parte del codigo.
+Posterior a esto tenemos que clasificar los tweets lo que dentro del script /Script/Codigo Phyton clasificador.py que está en la 
+Carpeta del proyecto ejecutamos en pycharm dentro de este script esta explicado que hace cada parte del código.
 
-Para el analisis de datos se creo vistas filtrando los sentimientos este documento de explicacion se encuentra en 
+Para el análisis de datos se creó vistas filtrando los sentimientos este documento de explicación se encuentra en 
 /Documentacion/Datos filtrados por sentimientos.docx
 
 
