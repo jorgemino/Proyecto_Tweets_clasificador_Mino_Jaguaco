@@ -2,6 +2,8 @@
 Proyecto clasificador tweets
 Integrantes: Jorge Miño
              Sonia Jaguaco
+             
+             
 Objetivo proyecto
 El proyecto se basa en la recoleccion tweets para procesamiento y limpieza, posterior a esto clasificarlos segun los sentimientos y obetener datos de interes en funcion de su clasficacion.
 
