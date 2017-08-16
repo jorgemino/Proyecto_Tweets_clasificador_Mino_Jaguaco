@@ -1,0 +1,203 @@
+from pexpect.ANSI import term
+'''
+ QUITO
+==============
+'''
+import couchdb
+import sys
+import urllib2
+import textblob
+import goslate
+from couchdb import view
+import re
+from textblob import TextBlob
+
+URL = 'localhost'
+db_name = 'tweets'
+
+'''========couchdb'=========='''
+server = couchdb.Server('http://'+URL+':5984/')  #('http://245.106.43.184:5984/') poner la url de su base de datos
+try:
+    print db_name
+    db = server[db_name]
+    print 'success'
+
+except:
+    sys.stderr.write("Error: DB not found. Closing...\n")
+    sys.exit()
+
+view = "ecuadorcode/ecuadorcode"
+#train
+from textblob.classifiers import NaiveBayesClassifier
+train={('Y mientras tanto en Ecuador voy a votar por Dalo para que lo dejen volver','neg'),
+('Absoluta verdad denuncio con nombres y apellidos, ahora ya hay muchos denunciantes,Vos tambien','neg'),
+('SI mantiene el ritmo llega fresquito a la segunda vuelta, para rematar el campeonato','neg'),
+('Si Abdala regresa, traera los costales o los dejara en Panama ','neg'),
+('HASTA EL LENNIN ES EL TITERE DEL MASHI SIN TOMAR ENCUENTA LOS CHIMBADORES DEL PACO MONCAYO PESANTES EL HIJO DE ABDALA LOS DEL MPD','neg'),
+('El IESS debe garantizar que los jubilados tengan una buena calidad de vida cuando se retiren.','pos'),
+('En La Concordia mantuvimos una entrevista con Super W Noticias.','neu'),
+('La confianza del Pueblo ecuatoriano con su gobierno esta terminada','pos'),
+('Dile no a los detractores del bienestar de los Pobres,son Mauricio Pozo, Patricio Zuquilanda, Paco Moncayo, Guillermo Lasso','neg'),
+('La honradez se practica con el ejemplo, si la cabeza no esta bien el sistema no esta bien.','neu'),
+('Con nuestros amigos de la comuna Mushullacta Cotundo','neu'),
+('Vamos a desarrollar el agro para que los campesinos tengan mejor calidad de vida','neg'),
+('Continuamos nuestro camino por el Napo en la comuna Sabata','neu'),
+('En Orellana todos saben que Zuquilanda es la Solucion','pos'),
+('El mejor candidato para la Presidencia del Ecuador es el Dr. Patricio Zuquilanda','neg'),
+('Lasso Viteri Moncayo Zuquilanda Espinel Bucarm nada de propuestas solo ataques','neg'),
+('Sabemos como generar el desarrollo y la riqueza para las provincias fronterizas','neg'),
+('me gusta la madurez temple y sencillez q demuestras Patricio y mas cuando no exageras como otros saludos en sus propuestas','pos'),
+('El viernes y el sabado estaran en Guayaquil, el Ing. Lucio Gutierrez y el Dr. Patricio Zuquilanda','neu'),
+('Duque no contempla nada sobre internet y TICs, conoce a candidatos que si lo hacen','neu'),
+('Zuquilanda aseguro que la primera accion que ejecutaria de ganar la Presidencia seria entregar a Julian Assange','neu'),
+('me gustaria conversar con usted sobre los ninos discapacitados y la falta de apoyo que tenemos sus familias','neu'),
+('Si Lenin se niega a debatir con Lasso es que de verdad no sabe nada','neg'),
+('Febrero llega pronto, ya quiero que Lasso y Paez ganen la presidencia y metan presos a todos esos ladrones que no','pos'),
+('No Lasso no, debatir no es convencer a la tendera del banco del barrio.','neg'),
+('el banquero Lasso  causante del feriado bancario esta desesperado q debata con los otros candidatos de la partidicracia','neu'),
+('Con Guillermo Lasso en la Presidencia, se saldra del extractivismo para pasar a un modelo basado en la','neu'),
+('si solo estan esperando que gane Lasso para cerrar las negociaciones','neu'),
+('Yo OFREZCO que todos los ecuatorianos viajaremos a la luna sin visa. Como lo hare? Ahi esta el detalle','nega'),
+('Guillermo Lasso: la mayoria del pueblo ecuatoriano no cree en la neutralidad del CNE','neg'),
+('me parece muy bien! no votare por usted prefiero a Cynthia ambos estan en caminos similares','neg'),
+('El hombre que practica con el ejemplo es creible, el que no lo hace es falso profeta como Lasso','neg'),
+('Gracias Alvaro Noboa, pero le toca a Guillermo Lasso tomar tu puesto','neu'),
+('Este pais esta podrido largatecorrea y llevate a CynthiaViteri6 y mariapaularomo ','neg'),
+('CynthiaViteri6 ramiroaguilart ampliaria a 9 o subieria un 9 encima de donde esta','pos'),
+('Hoy CynthiaViteri6  cerro una etapa pero inicia una nueva. CambioPositivo Cynthia2017','pos'),
+('CynthiaViteri6 se refirio asi a su companiero de formula que oficializara en algo mas de una hora en Quito','neu'),
+('CynthiaViteri6 dio a conocer su candidato a vicepresidente','neu'),
+('Por que no aceptaste la candidatura a la vicepresidencia con Cynthia','neu'),
+('LassoGuillermo JuanPabloPozoB me parece muy bien no votare por usted prefiero a Cynthia ambos estan en caminos similares','neu'),
+('CynthiaViteri6 dio a conocer su binomio','neu'),
+('CynthiaViteri6 LassoGuillermo Dios permita que no se cante nunca mas','neg'),
+('CynthiaViteri6 jaimenebotsaadi  ALANGASI LE APOYA PARA LLEGAR AL OBJETIVO. CINTHYA PRESIDENTA DE LA REPUBLICA DEL ECUADOR','pos'),
+('CynthiaViteri6. Me gusta mucho el Binomio. Confiamos en ese anhelado CambioPositivo propuesto','pos'),
+('CynthiaViteri6 no se q es peor, glass el saqueador de petroecuador y vienen por mas','negativa'),
+('CynthiaViteri6 leonardoviteri Te creemos no importa lo que borreguitos digan. Ellos si le han mentido al pais. Vamos Cynthia','pos'),
+('EN VIVO  Mano a mano con el economista MauricioPozoEC Tema binomio presidencial con CynthiaViteri6','neu'),
+('las cualidades de una persona como CynthiaViteri6 no son faciles de encontrar','pos'),
+('EN VIVO  Mano a mano con el economista MauricioPozoEC Tema binomio presidencial con CynthiaViteri6','neu'),
+('MauricioPozoEC CynthiaViteri6  Ud SIII es un Economista q con honor lleva su titulo, lo ha demostrado al paso de los anos','pos'),
+('Si Lasso entra a segunda velta a quien tendran que apoyar  Seniora CynthiaViteri6 no escupa al cielo','neg'),
+('SoloHayUnDios ecuadorenvivo CynthiaViteri6  Abrir la boca y decir q la deportada tiene conciencia social es como decir q Nebot es santo','neg'),
+('CynthiaViteri6  en politicamente correcto pura demagogia Tiene q mejorar su discurso','neg'),
+('Eliminar tres impuestos seria politicamente correcto o provocaria mayor inestabilidad en el pais PoliticamenteCorrecto CynthiaViteri','neu'),
+('PacoMoncayo perdona mariapaularomo pero esto es una extralimitacion del discurso politico, es un retroceso en PoliticaPublica Criminal','neg'),
+('Inscripcion Binomio Presidencial PacoMoncayo MonserrattBustamante','neu'),
+('PacoMoncayo Wilma Andrade insistio en diversas entrevistas que haran reformas a la Ley de Comunicacion. No derogaran la ley','neu'),
+('PacoMoncayo Esperamos terminen con esa lacra d elites Ofc militares con pensiones d 5000 y bonos d 350.000 BASTA','neg'),
+('GRAL PACO MONCAYO CANDIDATO PRESIDENCIAL TEMA: SU PROYECTO DE GOBIERNO, EN BUSQUEDA DE LA PRESIDENCIA DE LA REPUBLICA','neu'),
+('PacoMoncayo tenemos un pais extraordinario, con la mejor gente, pacifica, somos un pais rico, pero mal administrado. Notihoy','pos'),
+('PacoMoncayo hay que eliminar ciertos elementos toxicos de la ley de comunicacion, es parte de la libertad de expresion. Notihoy','neu'),
+('PacoMoncayo tenemos que estimular que retorne el ahorro que se ha ido a otros paises, hay que evitar la volatilidad normativa. Notihoy','neut'),
+('PacoMoncayo no ha funcionado en el mundo el autoritarismo, necesitamos una asamblea que legisle, no que tramite los deseos del ejecutivo','neg'),
+('PacoMoncayo ha gastado el gobierno 1.200 millones en propaganda, si eso se hubiera invertido en el agro no estaria abandonado. Notihoy','neg'),
+('PacoMoncayo 70 por ciento de los contratos se han hecho sin proceso licitatorio, hay que fiscalizar esos contratos, tenemos las carreteras mas caras','neg'),
+('pelagatos4 tremendo error de Paco, es desconocida incluso en el circulo academico, y no suma, lo que debe hacer un binomio por logica','neg'),
+('El apoyo al binomio Lenin JorgeGlas llega de todos los rincones de la region','neu'),
+('Lenin q caballero es usted Don Lenin.  Diferencia con otros','pos'),
+('Desde Venezuela el PartidoPSUV saluda postulacion de Lenin y JorgeGlas','neu'),
+('El MovimientoEvita de Argentina expresa su apoyo a 35PAIS y su respaldo al binomio presidencial Lenin','pos'),
+('Vamos Lenin','pos'),
+('Hoy empieza el camino hacia la Presidencia con Lenin Moreno, para darle continuidad a La Revolucion Ciudadana','pos'),
+('Lenin Presidente dos palabras con millones de corazones comprometidos','neu'),
+('LeninPresidente  encendemos los motores para profundizar contacto con el pueblo','pos'),
+('Gran alegria en la concentracion en la sede de AP, listos para acompaniar a la inscripcion de nuestro binomio Lenin','pos'),
+('El binomio de la victoria. Juntos somos invencibles Lenin','pos'),
+('En estos momentos desde CNE listos a recibir el binomio JorgeGlas Lenin cuenta con un ejercito de corazones apoyo','neu'),
+('APOYO INCONDICIONAL  leninPresidente VIVA LA REVOLUCION','pos'),
+('Lenin abrazo afectuoso ahora que asumes un gran desafio. Fuerza y exito querido amigo','pos'),
+('Hoy empieza el camino a la victoria, Lenin ya eres nuestro Presidente','pos'),
+('Lenin vamos a dejar el alma en esta campania y la vamos a ganar','pos'),
+('Lenin JorgeGlas Estan acabados companieritos, mejor desistan a tiempo porque si tardan la caida sera mas fuerte','neg'),
+('Este momento fuera del CNE leninPresidente puro borrego creando caos','neg'),
+('Alianza PAIS inscribio oficialmente binomio Lenin Moreno Jorge Glas en instalaciones del CNE','neu'),
+('LeninPresidente. Que chiste. Como si fuesemos tontos.','neg'),
+('Lenin JorgeGlas disculpe pero esta incumpliendo su palabra en la que se refirio que ya no iba a participar mas en politica, que paso','neg'),
+('ECUATORIANOS NI LENIN  NI GLAS CORRPCION NUNCA MAS','pos'),
+('Alex Alcivar binomio de Washington Pesantez presentaron sus candidaturas ante CNE','neu'),
+('Washington prepara una nueva revolucion: meteorologica','neu'),
+('Washington Pesantez: hay que renegociar la deuda cara, por otra menos cara','neu'),
+('Washington Pesantez: no soy experto en materia economica por ello nos rodearemos de expertos que nos guien en ello','neu'),
+('Ya no le den mas al Washington Pesantez','neu'),
+('Como no apoyar tu noble y solidaria gestion','pos'),
+('Con ese corazon vacio para mi PATRIA,pretenden que, gobernar? No, basta carajo!','neg'),
+('mi General esta moviendo mal las fichas','neg'),
+('Paquito ud tiene mi voto..hombre tranquilo que escucha sobrio prudente.Siga asi general','pos'),
+('PAGAR AHORA ES MAS FACIL CON FENIX PAGOS EN CUALQUIERA DE NUESTROS PUNTOS AFILIADOS A NIVEL NACIONAL','neu'),
+('Canciller alemana Merkel da inicio a su campana electoral ','neu'),
+('me encanta esa cara de marciana jajajajjaja belleza exotica dicen','pos'),
+('El Manchester United de Antonio Valencia y Jose Mourinho ESTARA en Ecuador','pos'),
+('Un sorbo de fe en el camino hacia el anhelo la manana trae consigo otra aventura que se pinta de color sol Aguante el Barce','pos'),
+('Una historia motivante sobre la lucha de los derechos humanos','pos'),
+('todo lo que usted tiene que hacer relajese','pos'),
+('Mil felicidades a los habitantes de Canuto en sus 155 anos de vida politica Feliz','pos'),
+('El Fiscal Baca solo habla y habla pero no actua, pareciera que sigue el mismo libreto que su predecesor','neg'),
+('LA TREMENDA CELEBRACION de los dirigentes de Barcelona SC en plena suite del estadio de Palmeiras','pos'),
+('Es la septima vez en la carrera de Andres Chocho que es eliminado por amonestaciones en una prueba elite','neu'),
+('Jesus le respondia Escrito esta No salo de pan vive el hombre sino de toda palabra que sale de la boca de Dios','pos'),
+('Nunca se esta demasiado viejo pobre y cansado para escuchar musica','pos'),
+('Necesitaba esa cancion de Kygo para alinear los chakras','pos'),
+('Le agradezco a la vida por la capacidad que tengo de comer y no engordar a mi edad ','pos'),
+('Y ojala nunca te abracen por ultima vez','neu'),
+('comienzo directo en unos minutos xd','pos'),
+('A veces encontramos el destino en el camino que queremos evitar','neg'),
+('Hacerse reir mutuamente esa es la clave','pos'),
+('util para sus vidas. El consumidor esta buscando satisfacer sus necesidades y nosotros debemos estar alli para ayudarles a lograr ese 2/3','neu'),
+('Cuando este chico estaba sin palabras porque conocio a 1d y el padre dice que ellos fueron muy amables y dulces con','neu'),
+('Con los ojos abiertos y los pies en la tierra asi debes enamorarte, y no tendras que estrellarte contra las paredes','neu'),
+('Paquito ud tiene mi voto..hombre tranquilo que escucha sobrio prudente.Siga asi general', 'pos'),
+('bueno tiene opciones: Moncayo y ex Apes, Cinthya y Gonzales, Alvarito y Luci, Dalo  Lasso para mi ya no se ve tan mal','pos'),
+('Don Rodrigo Paz tratandome de convencer para votar por Cinthia, como hace unos meses su hijo me trataba de convencer por el Dios Tenorio.','neg'),
+('Usted es buen referente, adelante!', 'pos'),
+('Dalo es el unico candidato, despues de Lenin, que proviene de una seudo dinastia que se cree destinada a GOBERNAR A LA PLEBE!!','neg')
+       }
+
+
+#entranemiento clasificador
+cl = NaiveBayesClassifier(train)
+test =[('Paquito ud tiene mi voto..hombre tranquilo que escucha sobrio prudente.Siga asi general','pos'),
+         ('bueno tiene opciones: Moncayo y ex Apes, Cinthya y Gonzales, Alvarito y Luci, Dalo  Lasso para mi ya no se ve tan mal','pos'),
+         ('Don Rodrigo Paz tratandome de convencer para votar por Cinthia, como hace unos meses su hijo me trataba de convencer por el Dios Tenorio.','neg'),
+         ('Usted es buen referente, adelante!','pos'),
+         ('Dalo es el unico candidato, despues de Lenin, que proviene de una seudo dinastia que se cree destinada a GOBERNAR A LA PLEBE!!','neg')]
+LIMIT_OF_DOCUMENTS = 1000
+print cl.accuracy(test)
+
+LIMIT_OF_DOCUMENTS = 1000
+url = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+url2= '(www\.)(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+patron2 = re.compile('#|@|'+url+'|'+url2)
+
+
+while len(db.view(view, limit=LIMIT_OF_DOCUMENTS)) > 0:
+    for data in db.view(view, limit=LIMIT_OF_DOCUMENTS):
+        json_data = {}
+        json_data = db.get(data['id'])
+        text_es = data['value']
+        text_esfiltrado = string = patron2.sub('', text_es)
+        text_esblob = TextBlob(text_esfiltrado)
+
+        polarity_value = text_esblob.sentiment.polarity * 100.0
+        polarity = ""
+        if polarity_value == 0:
+            polarity = 'neu'
+            print (polarity)
+        elif polarity_value < 0:
+            polarity = 'neg'
+            print (polarity)
+        else:
+            polarity = 'pos'
+            print (polarity)
+        subjectivity = text_esblob.sentiment.subjectivity
+        json_data['label'] = {'polarity': polarity}
+        print text_es
+        print text_esfiltrado
+        json_data['textexp']=text_esfiltrado
+        try:
+            db.save(json_data)
+        except:
+            print "Data repeated..."
+
+
